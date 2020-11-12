@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Crime Heatmap</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Custom fonts for this template -->
+  <link href="static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+  <!-- Custom styles for this template -->
+  <link href="static/css/clean-blog.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand" href="/home">Home</a>
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        Menu
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/aboutus">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/data">Crime Data</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/heatmap">Crime Heatmap</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/usmap">Crime Leaflet</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/homicide">Crime Bubbles</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/njmap">NJ Crime</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+   <!-- Page Header -->
+   <header class="masthead" style="background-image: url('static/img/crime.jpeg')">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="site-heading">
+            <h1>Crime Rates </h1>
+            <span class="subheading">1995-2019</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+</head>
+
+<body>
+  
+  <div id='crimeAverage'><!-- Plotly chart will be drawn inside this DIV --></div>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    
+    <script>
+    
+    Plotly.d3.csv("static/resources/US_State_Crime_Rates.csv", function(err, rows){
+
+  function filter_and_unpack(rows, key, year) {
+  return rows.filter(row => row['year'] == year).map(row => row[key])
+  }
+
+  var frames = []
+  var slider_steps = []
+
+  var n = 24;
+  var num = 1995;
+  for (var i = 0; i <= n; i++) {
+    var z = filter_and_unpack(rows, 'crime_rate', num)
+    var locations = filter_and_unpack(rows, 'state', num)
+    frames[i] = {data: [{z: z, locations: locations, text: locations}], name: num}
+    slider_steps.push ({
+        label: num.toString(),
+        method: "animate",
+        args: [[num], {
+            mode: "immediate",
+            transition: {duration: 300},
+            frame: {duration: 300}
+          }
+        ]
+      })
+    num = num + 1
+  }
+
+var data = [{
+      type: 'choropleth',
+      locationmode: 'USA-states',
+      locations: frames[0].data[0].locations,
+      z: frames[0].data[0].z,
+      text: frames[0].data[0].locations,
+      zauto: false,
+      zmin: 0,
+      zmax: 25
+
+}];
+var layout = {
+   
+    geo:{
+       scope: 'usa',
+       countrycolor: 'rgb(255, 255, 255)',
+       showland: true,
+       landcolor: 'rgb(217, 217, 217)',
+       showlakes: true,
+       lakecolor: 'rgb(255, 255, 255)',
+       subunitcolor: 'rgb(255, 255, 255)',
+       lonaxis: {},
+       lataxis: {}
+    },
+    updatemenus: [{
+      x: 0.1,
+      y: 0,
+      yanchor: "top",
+      xanchor: "right",
+      showactive: false,
+      direction: "left",
+      type: "buttons",
+      pad: {"t": 87, "r": 10},
+      buttons: [{
+        method: "animate",
+        args: [null, {
+          fromcurrent: true,
+          transition: {
+            duration: 200,
+          },
+          frame: {
+            duration: 500
+          }
+        }],
+        label: "Play"
+      }, {
+        method: "animate",
+        args: [
+          [null],
+          {
+            mode: "immediate",
+            transition: {
+              duration: 0
+            },
+            frame: {
+              duration: 0
+            }
+          }
+        ],
+        label: "Pause"
+      }]
+    }],
+    sliders: [{
+      active: 0,
+      steps: slider_steps,
+      x: 0.1,
+      len: 0.9,
+      xanchor: "left",
+      y: 0,
+      yanchor: "top",
+      pad: {t: 50, b: 10},
+      currentvalue: {
+        visible: true,
+        prefix: "Year:",
+        xanchor: "right",
+        font: {
+          size: 20,
+          color: "#666"
+        }
+      },
+      transition: {
+        duration: 300,
+        easing: "cubic-in-out"
+      }
+    }]
+};
+
+Plotly.newPlot('crimeAverage', data, layout).then(function() {
+    Plotly.addFrames('crimeAverage', frames);
+  });
+})
+</script>
+
+    
+    
+</body>
+</html>

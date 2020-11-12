@@ -1,0 +1,204 @@
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Crimes Data</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom fonts for this template -->
+  <link href="static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+  <!-- Custom styles for this template -->
+  <link href="static/css/clean-blog.min.css" rel="stylesheet">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ==" crossorigin="" />
+
+      <!-- Our CSS  -->
+  
+    <style>
+     body { margin:0; padding:0; 
+      background-color: grey;}
+    #map {   
+    height: auto; 
+    position: absolute; 
+    top: 0; 
+    bottom: 0; 
+    left: 0; 
+    right: 0;
+    margin-top: 50px; }
+
+    
+    </style>
+
+    
+
+  </head>
+
+  <body>
+
+
+     <!-- Navigation -->
+
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand" href="/home">Home</a>
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        Menu
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/aboutus">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/data">Crime Data</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/heatmap">Crime Heatmap</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/usmap">Crime Leaflet</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/homicide">Crime Bubbles</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/njmap">NJ Crime</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</div>
+  <!-- Insert HTML division tag to layout the map -->
+  <div class='row'>
+  
+    <div id="map"></div>
+  </div>
+
+    <!-- <div id="map"></div> -->
+
+    <!-- API key -->
+    <script type="text/javascript" src="static/js/config.js"></script>
+
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.3.3/dist/leaflet.js" integrity="sha512-tAGcCfR4Sc5ZP5ZoVz0quoZDYX5aCtEm/eu1KhSLj2c9eFrylXZknQYmxUssFaVJKvvc0dJQixhGjG2yXWiV9Q==" crossorigin=""></script>
+    <!-- D3 CDN -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+    <!-- Leaflet-Choropleth JavaScript -->
+    <script type="text/javascript" src="static/js/choropleth.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.7.1/d3-tip.min.js"></script>
+    <!-- JS -->
+    <script>var myMap = L.map("map", {
+      center: [40.057347,  -74.414532],
+      zoom: 9,
+      scrollWheelZoom: false
+    });
+    
+    L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+      attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
+      tileSize: 512,
+      maxZoom: 10,
+      zoomOffset: -1,
+      id: "mapbox/streets-v11",
+      accessToken: API_KEY
+    }).addTo(myMap);
+  
+    var geojson;
+    var link = "static/resources/mergeOffencesCounty1.geojson";
+    // var link = "CrimeCity.geojson"
+    
+  
+  // Grabbing our GeoJSON data..
+  d3.json(link, function(data) {
+  
+    
+    
+    console.log(data)    
+    
+     // Create a new choropleth layer
+     geojson = L.choropleth(data, {
+  
+      // Define what  property in the features to use
+      valueProperty: "Offenses",
+  
+      // Set color scale
+      scale: ["#ffffb2", "#b10026"],
+  
+      // Number of breaks in step range
+      steps: 10,
+  
+      // q for quartile, e for equidistant, k for k-means
+      mode: "q",
+      style: {
+        // Border color
+        color: "#0aa80d",
+        weight: 1,
+        
+        fillOpacity: 0.5
+      },
+      filter: function(feature, layer) {
+                return feature.properties.STATE == 34;
+            },
+      
+  
+      // Binding a pop-up to each layer
+      onEachFeature: function(feature, layer) {
+        layer.bindPopup(`County:  ${feature.properties.NAME} <br> <hr>
+                          CRIME RATE:  ${feature.properties.Crime_rate} <br> <hr>
+                          SUMMARY:  ${feature.properties.Status} <br>
+                          Offences:  ${feature.properties.Offenses} <br>`);
+      }
+    }).addTo(myMap);  
+  
+  
+     // Set up the legend
+     var legend = L.control({ position: "bottomright" });
+     legend.onAdd = function() {
+       var div = L.DomUtil.create("div", "info legend");
+       var limits = geojson.options.limits;
+       var colors = geojson.options.colors;
+       var labels = [];
+  
+        // Add min & max
+      var legendInfo = "<h1>Offence Total</h1>" +
+      "<div class=\"labels\">" +
+        "<div class=\"min\">MINIMUM: " + limits[0] + "</div>" +
+        "<div class=\"max\">MAXIMUM: " + limits[limits.length - 1] + "</div>" +
+      "</div>";
+  
+    div.innerHTML = legendInfo;
+  
+    limits.forEach(function(limit, index) {
+      labels.push("<li style=\"background-color: " + colors[index] + "\"></li>");
+    });
+  
+    div.innerHTML += "<ul>" + labels.join("") + "</ul>";
+    return div;
+  };
+  
+  // Adding legend to the map
+  legend.addTo(myMap);
+    
+  
+  });</script>
+
+    <!-- Leaflet heatmap plugin-->
+    <script type="text/javascript" src="static/js/leaflet-heat.js"></script>
+
+  </body>
+
+</html>
