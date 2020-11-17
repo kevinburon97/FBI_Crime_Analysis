@@ -45,6 +45,53 @@ def njmap():
 def heatmap():
     return  render_template("heatmap.html")
 
+@app.route("/burglary")
+def burg():
+    return render_template("Burglary.html")
+
+@app.route("/cacrimetrend")
+def cacrimetrend():
+    return render_template("CAcrimetrend.html")
+
+@app.route("/crimetrend")
+def crimetrend():
+    return render_template("CrimeTrends.html")
+
+@app.route("/dccrimetrend")
+def dcct():
+    return render_template("DCcrimetrend.html")
+
+@app.route("/homicideml")
+def homml():
+    return render_template("Homicide_ml.html")
+
+@app.route("/motor")
+def motor():
+    return render_template("Motor.html")
+
+@app.route("/njcrimetab")
+def njcrimetab():
+    return render_template("NJ_Crime_Tab.html")
+
+@app.route("/njcrimetrend")
+def Njct():
+    return render_template("NJcrimetrend.html")
+
+@app.route("/nycrimetrend")
+def nyct():
+    return render_template("NYcrimetrend.html")
+
+@app.route("/robbery")
+def robbery():
+    return render_template("Robbery.html")
+
+@app.route("/usacrimetrend")
+def USct():
+    return render_template("USAcrimetrend.html")
+    
+@app.route("/decrimetrend")
+def dect():
+    return render_template("DEcrimetrend.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
